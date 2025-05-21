@@ -33,6 +33,8 @@ app.MapGet("/describe/{name}", async (string name, BlobContainerClient client, I
         Contents =
         [
             new TextContent("Generate a fun caption for this image:"),
+            // Does not work with the emulator (localhost urls)
+            // new UriContent(blobClient.Uri, "image/png"),
             new DataContent(ms.ToArray(), "image/png"),
         ]
     });

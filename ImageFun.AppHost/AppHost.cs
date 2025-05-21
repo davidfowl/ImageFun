@@ -17,6 +17,7 @@ builder.AddProject<Projects.ImageUpload>("web")
     .WaitFor(container);
 
 builder.AddProject<Projects.ImageProcessor>("imageprocessor")
+       .WithExternalHttpEndpoints()
        .WithReference(container)
        .WithReference(oaics)
        .WaitFor(container);
