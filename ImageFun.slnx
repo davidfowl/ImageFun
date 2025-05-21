@@ -1,0 +1,14 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+  </Folder>
+  <Project Path="ImageProcessor/ImageProcessor.csproj" />
+  <Project Path="ImageUpload/ImageUpload.csproj" />
+  <Project Path="ImageFun.AppHost/ImageFun.AppHost.csproj" />
+  <Project Path="ImageFun.ServiceDefaults/ImageFun.ServiceDefaults.csproj" />
+</Solution>

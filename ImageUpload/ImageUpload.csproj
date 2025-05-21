@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ImageFun.ServiceDefaults\ImageFun.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Azure.Storage.Blobs" Version="9.4.0-preview.1.25267.3" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="SafeImages\" />
+  </ItemGroup>
+
+</Project>
