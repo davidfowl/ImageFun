@@ -16,14 +16,16 @@
 <head>
     <script>
         async function fetchDescription() {
+            const descBox = document.getElementById('descbox');
+            descBox.textContent = 'Loading...';
             const imageName = encodeURIComponent('@Path');
             try {
                 const resp = await fetch(`/describe/${imageName}`);
                 if (!resp.ok) throw new Error('No description');
                 const desc = await resp.text();
-                document.getElementById('descbox').textContent = desc;
+                descBox.textContent = desc;
             } catch {
-                document.getElementById('descbox').textContent = 'No description available.';
+                descBox.textContent = 'No description available.';
             }
         }
         document.addEventListener('DOMContentLoaded', function() {
