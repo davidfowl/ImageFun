@@ -13,10 +13,30 @@
 }
 
 <html>
-<head></head>
+<head>
+    <script>
+        async function fetchDescription() {
+            const imageName = encodeURIComponent('@Path');
+            try {
+                const resp = await fetch(`/describe/${imageName}`);
+                if (!resp.ok) throw new Error('No description');
+                const desc = await resp.text();
+                document.getElementById('descbox').textContent = desc;
+            } catch {
+                document.getElementById('descbox').textContent = 'No description available.';
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('descgenbtn').addEventListener('click', fetchDescription);
+            fetchDescription(); // Fetch on load
+        });
+    </script>
+</head>
 <body>
     <h1>Preview: @safePath</h1>
     <img src="@imgSrc" style="display:block;margin:2em auto;max-width:600px;max-height:400px;" />
+    <button id="descgenbtn" style="display:block;margin:1em auto;">Generate Description</button>
+    <div id="descbox" style="position:fixed;bottom:20px;left:20px;right:20px;background:#fffbe8;border:1px solid #ccc;padding:1em;z-index:1000;box-shadow:0 2px 8px #0002;font-size:1.1em;"></div>
     <br />
     <a href="@backHref">Back</a>
 </body>

@@ -33,7 +33,7 @@ public static class ImagesApi
             // Redirect to home after upload
             return Results.Redirect("/");
         })
-        .DisableAntiforgery();
+        .DisableAntiforgery(); // Don't do this in production!
 
         // Endpoint to serve raw image bytes for thumbnails and previews
         app.MapGet("/images/{*path}", async (string path, BlobContainerClient container) =>
@@ -77,6 +77,13 @@ public static class ImagesApi
             return new RazorComponentResult<ImagePreview>(new { Path = path });
         });
 
+        app.MapGet("/describe/{name}", async (string name, HttpClient client) =>
+        {
+            // Forward the request to the image processor service
+            var encodedName = Uri.EscapeDataString(name);
+            return await client.GetStringAsync($"http+https://image-processor/describe/{encodedName}");
+        });
+
         // Endpoint to delete a blob
         app.MapPost("/delete", async ([FromForm] string file, BlobContainerClient container) =>
         {
@@ -87,7 +94,6 @@ public static class ImagesApi
             }
             return Results.Redirect("/");
         })
-        .DisableAntiforgery();
-
+        .DisableAntiforgery(); // Don't do this in production!
     }
 }
