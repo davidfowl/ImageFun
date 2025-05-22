@@ -81,7 +81,7 @@ public static class ImagesApi
         {
             // Forward the request to the image processor service
             var encodedName = Uri.EscapeDataString(name);
-            return await client.GetStringAsync($"http+https://image-processor/describe/{encodedName}");
+            return await client.GetStringAsync($"http+https://imageprocessor/describe/{encodedName}");
         });
 
         // Endpoint to delete a blob

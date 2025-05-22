@@ -9,22 +9,41 @@ var oaics = builder.AddConnectionString("oai", cs =>
 var storage = builder.AddAzureStorage("storage").RunAsEmulator();
 
 var blobs = storage.AddBlobs("blobs");
+
+// This will make sure the container is created
 var container = blobs.AddBlobContainer("images", blobContainerName: "image-uploads");
 
-var feenv = builder.AddAzureAppServiceEnvironment("fe-env");
-var beenv = builder.AddAzureContainerAppEnvironment("be-env");
+// There's a bug https://github.com/dotnet/aspire/issues/9454
+var containercs = builder.AddConnectionString("imagescs", cs =>
+{
+    if (storage.Resource.IsEmulator)
+    {
+        cs.Append($"Endpoint=\"{blobs}\";");
+    }
+    else
+    {
+        cs.Append($"Endpoint={blobs};");
+    }
+    cs.Append($"ContainerName={container.Resource.BlobContainerName}");
+});
 
-var imageProcessor = builder.AddProject<Projects.ImageProcessor>("image-processor")
+var acr = builder.AddAzureContainerRegistry("acr");
+var feenv = builder.AddAzureAppServiceEnvironment("fe-env")
+    .WithAzureContainerRegistry(acr);
+var beenv = builder.AddAzureContainerAppEnvironment("be-env")
+    .WithAzureContainerRegistry(acr);
+
+var imageProcessor = builder.AddProject<Projects.ImageProcessor>("imageprocessor")
        .WithExternalHttpEndpoints()
-       .WithReference(container)
+       .WithReference(containercs)
        .WithReference(oaics)
-       .WaitFor(container)
+       .WaitFor(containercs)
        .WithComputeEnvironment(beenv);
 
 builder.AddProject<Projects.ImageUpload>("web")
     .WithExternalHttpEndpoints()
-    .WithReference(container)
-    .WaitFor(container)
+    .WithReference(containercs)
+    .WaitFor(containercs)
     .WithReference(imageProcessor)
     .WaitFor(imageProcessor)
     .WithComputeEnvironment(feenv)

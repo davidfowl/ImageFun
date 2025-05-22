@@ -1,6 +1,6 @@
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddAzureBlobContainerClient("images");
+builder.AddAzureBlobContainerClient("imagescs");
 
 builder.Services.AddRazorComponents();
 
