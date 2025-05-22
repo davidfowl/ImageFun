@@ -1,35 +1,65 @@
+using Aspire.Hosting.Azure;
 using Aspire.Hosting.Azure.AppContainers;
 using Azure.Provisioning;
 using Azure.Provisioning.Expressions;
 
 public static class Extensions
 {
-    // HACK!!
-    public static void FixEndpoint(this IResourceBuilder<ProjectResource> projectResource, IResourceBuilder<AzureContainerAppEnvironmentResource> beEnv)
+    public static void FixEndpoints(this IResourceBuilder<ProjectResource> projectResource)
     {
-        var domain = beEnv.GetOutput("AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN");
+        Dictionary<string, object> env = [];
+
+        projectResource.WithEnvironment(context =>
+        {
+            env = context.EnvironmentVariables;
+        });
 
         projectResource.PublishAsAzureAppServiceWebsite((infra, website) =>
         {
-            var domainProperty = domain.AsProvisioningParameter(infra);
-
-            var http = BicepFunction.Interpolate($"http://image-processor.{domainProperty}");
-            var https = BicepFunction.Interpolate($"https://image-processor.{domainProperty}");
-
             foreach (var setting in website.SiteConfig.AppSettings)
             {
                 IBicepValue? v = setting?.Value?.Name;
 
                 if (v == null)
+                {
                     continue;
-
-                if (v.LiteralValue is string s && s == "services__image-processor__http__0")
-                {
-                    setting!.Value!.Value = http;
                 }
-                else if (v.LiteralValue is string s2 && s2 == "services__image-processor__https__0")
+
+                var name = v.LiteralValue?.ToString();
+
+                if (name == null)
                 {
-                    setting!.Value!.Value = https;
+                    continue;
+                }
+
+                if (env.TryGetValue(name, out var value) && value is EndpointReference e)
+                {
+                    var thisEnvironment = projectResource.Resource.GetDeploymentTargetAnnotation()?.ComputeEnvironment;
+                    var endpointRefEnvironment = e.Resource.GetDeploymentTargetAnnotation()?.ComputeEnvironment;
+
+                    if (thisEnvironment == endpointRefEnvironment)
+                    {
+                        // This is a reference to the same environment, so we can use the domain
+                        // from the environment instead of the one from the project.
+                        continue;
+                    }
+
+                    // We need to resolve the endpoint from the endpointRefEnvironment
+                    // We only support AzureContainerAppEnvironment
+                    if (endpointRefEnvironment is AzureContainerAppEnvironmentResource endpointRefEnv)
+                    {
+                        // Get the domain from the environment. We should expose this as a property
+                        // on the AzureContainerAppEnvironmentResource.
+                        var domainParameter = new BicepOutputReference("AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN", endpointRefEnv).AsProvisioningParameter(infra);
+
+                        setting!.Value!.Value = BicepFunction.Interpolate(
+                            $"{e.Scheme}://{e.Resource.Name}.{domainParameter}"
+                        );
+                    }
+                    else
+                    {
+                        throw new NotSupportedException($"Unsupported environment type: {endpointRefEnvironment?.GetType()}");
+                    }
                 }
             }
         });
