@@ -7,7 +7,7 @@ builder.AddServiceDefaults();
 
 builder.AddChatClient();
 
-builder.AddAzureBlobContainerClient("imagescs");
+builder.AddAzureBlobs();
 
 var app = builder.Build();
 
@@ -22,11 +22,7 @@ app.MapGet("/describe/{name}", async (string name, BlobContainerClient client, I
         return Results.NotFound();
     }
 
-    // Check if the blob is using a loopback URI
-    // If it is, then we need to download the image bytes
-    AIContent imageContent = blobClient.Uri.IsLoopback
-        ? await DownloadBlobAsByteArray("image/png")
-        : new UriContent(blobClient.Uri, "image/png");
+    AIContent imageContent = await DownloadBlobAsByteArray("image/png");
 
     async Task<DataContent> DownloadBlobAsByteArray(string contentType)
     {
