@@ -1,21 +1,15 @@
-@using System.Net
-@using System.Web
 @using Microsoft.AspNetCore.Components.Forms
-@using Microsoft.AspNetCore.Antiforgery
+@using static System.Web.HttpUtility
 
-@inject IAntiforgery Antiforgery
 @code {
     [Parameter]
-    public List<string> Blobs { get; set; } = new();
-
-    [Parameter]
-    public string AntiforgeryToken { get; set; }
+    public List<string> Blobs { get; set; } = [];
 }
 
 <link rel="stylesheet" href="/style.css" />
 
 <form action="/upload" method="post" enctype="multipart/form-data" style="margin-bottom:2em;">
-    <input type="hidden" name="__RequestVerificationToken" value="@AntiforgeryToken" />
+    <AntiforgeryToken />
     <label for="file">Upload file:</label>
     <input type="file" id="file" name="file" required />
     <button type="submit">Upload</button>
@@ -24,14 +18,14 @@
 <div class="gallery">
     @foreach (var name in Blobs)
     {
-        var thumbUrl = $"/images/{System.Web.HttpUtility.UrlEncode(name)}";
-        var previewUrl = $"/preview/{System.Web.HttpUtility.UrlEncode(name)}";
+        var thumbUrl = $"/images/{UrlPathEncode(name)}";
+        var previewUrl = $"/preview/{UrlPathEncode(name)}";
         <div class="gallery-item">
             <a href="@previewUrl" title="Preview">
                 <img src="@thumbUrl" alt="@name" />
-            </a>            
+            </a>
             <form method="post" action="/delete" onsubmit="return confirm('Delete @name?')">
-                <input type="hidden" name="__RequestVerificationToken" value="@AntiforgeryToken" />
+                <AntiforgeryToken />
                 <input type="hidden" name="file" value="@name" />
                 <button type="submit">Delete</button>
             </form>

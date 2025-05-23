@@ -1,11 +1,9 @@
-using Microsoft.AspNetCore.Antiforgery;
-
 public static class ImagesApi
 {
     public static void MapImageApi(this WebApplication app)
     {
         // Endpoint to render a photo gallery of image blobs
-        app.MapGet("/", async (IAntiforgery antiforgery, HttpContext context, BlobContainerClient container) =>
+        app.MapGet("/", async (BlobContainerClient container) =>
         {
             static bool IsImage(string ext) => ext is ".jpg" or ".jpeg" or ".png" or ".gif";
 
@@ -20,9 +18,8 @@ public static class ImagesApi
                     items.Add(item.Name);
                 }
             }
-            var token = antiforgery.GetAndStoreTokens(context).RequestToken;
 
-            return new RazorComponentResult<PhotoGallery>(new { Blobs = items, AntiforgeryToken = token });
+            return new RazorComponentResult<PhotoGallery>(new { Blobs = items });
         });
 
         // Minimal POST endpoint for image upload
