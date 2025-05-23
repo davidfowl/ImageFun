@@ -22,7 +22,10 @@ app.MapGet("/describe/{name}", async (string name, BlobContainerClient client, I
         return Results.NotFound();
     }
 
-    AIContent imageContent = await DownloadBlobAsByteArray("image/png");
+    var properties = await blobClient.GetPropertiesAsync();
+    var contentType = properties.Value.ContentType ?? "image/png";
+
+    AIContent imageContent = await DownloadBlobAsByteArray(contentType);
 
     async Task<DataContent> DownloadBlobAsByteArray(string contentType)
     {
