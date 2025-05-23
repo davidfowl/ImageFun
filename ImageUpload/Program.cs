@@ -4,13 +4,15 @@ builder.AddAzureBlobs();
 
 builder.Services.AddRazorComponents();
 
+builder.Services.AddAntiforgery();
+
 builder.AddServiceDefaults();
 
 var app = builder.Build();
 
-app.MapStaticAssets();
+app.UseAntiforgery();
 
-app.MapDefaultEndpoints();
+app.MapStaticAssets();
 
 app.MapImageApi();
 

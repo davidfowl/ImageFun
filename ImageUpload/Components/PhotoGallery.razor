@@ -1,13 +1,21 @@
 @using System.Net
 @using System.Web
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Antiforgery
+
+@inject IAntiforgery Antiforgery
 @code {
     [Parameter]
     public List<string> Blobs { get; set; } = new();
+
+    [Parameter]
+    public string AntiforgeryToken { get; set; }
 }
 
 <link rel="stylesheet" href="/style.css" />
 
 <form action="/upload" method="post" enctype="multipart/form-data" style="margin-bottom:2em;">
+    <input type="hidden" name="__RequestVerificationToken" value="@AntiforgeryToken" />
     <label for="file">Upload file:</label>
     <input type="file" id="file" name="file" required />
     <button type="submit">Upload</button>
@@ -21,8 +29,9 @@
         <div class="gallery-item">
             <a href="@previewUrl" title="Preview">
                 <img src="@thumbUrl" alt="@name" />
-            </a>
-            <form method="post" action="/delete" onsubmit="return confirm("Delete @name?")">
+            </a>            
+            <form method="post" action="/delete" onsubmit="return confirm('Delete @name?')">
+                <input type="hidden" name="__RequestVerificationToken" value="@AntiforgeryToken" />
                 <input type="hidden" name="file" value="@name" />
                 <button type="submit">Delete</button>
             </form>

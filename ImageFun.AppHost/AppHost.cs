@@ -32,7 +32,7 @@ builder.AddProject<Projects.ImageUpload>("web")
     .WaitFor(container)
     .WithReference(imageProcessor)
     .WaitFor(imageProcessor)
-    .WithComputeEnvironment(beenv)
+    .WithComputeEnvironment(feenv)
     .FixEndpoints();
 
 builder.Build().Run();

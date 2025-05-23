@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Antiforgery;
+
 public static class ImagesApi
 {
     public static void MapImageApi(this WebApplication app)
     {
         // Endpoint to render a photo gallery of image blobs
-        app.MapGet("/", async (BlobContainerClient container) =>
+        app.MapGet("/", async (IAntiforgery antiforgery, HttpContext context, BlobContainerClient container) =>
         {
             static bool IsImage(string ext) => ext is ".jpg" or ".jpeg" or ".png" or ".gif";
 
@@ -18,7 +20,9 @@ public static class ImagesApi
                     items.Add(item.Name);
                 }
             }
-            return new RazorComponentResult<PhotoGallery>(new { Blobs = items });
+            var token = antiforgery.GetAndStoreTokens(context).RequestToken;
+
+            return new RazorComponentResult<PhotoGallery>(new { Blobs = items, AntiforgeryToken = token });
         });
 
         // Minimal POST endpoint for image upload
@@ -32,8 +36,7 @@ public static class ImagesApi
 
             // Redirect to home after upload
             return Results.Redirect("/");
-        })
-        .DisableAntiforgery(); // Don't do this in production!
+        });
 
         // Endpoint to serve raw image bytes for thumbnails and previews
         app.MapGet("/images/{*path}", async (string path, BlobContainerClient container) =>
@@ -73,6 +76,7 @@ public static class ImagesApi
             {
                 return Results.NotFound();
             }
+
             // Render the ImagePreview Razor component
             return new RazorComponentResult<ImagePreview>(new { Path = path });
         });
@@ -93,7 +97,6 @@ public static class ImagesApi
                 await blob.DeleteIfExistsAsync();
             }
             return Results.Redirect("/");
-        })
-        .DisableAntiforgery(); // Don't do this in production!
+        });
     }
 }
