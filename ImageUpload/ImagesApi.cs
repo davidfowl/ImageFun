@@ -1,21 +1,17 @@
+using Azure.Storage.Blobs.Models;
+
 public static class ImagesApi
 {
     public static void MapImageApi(this WebApplication app)
     {
         app.MapGet("/", async (BlobContainerClient container) =>
         {
-            static bool IsImage(string ext) => ext is ".jpg" or ".jpeg" or ".png" or ".gif";
-
             var blobs = container.GetBlobsAsync();
             var items = new List<string>();
 
             await foreach (var item in blobs)
             {
-                var ext = Path.GetExtension(item.Name).ToLowerInvariant();
-                if (IsImage(ext))
-                {
-                    items.Add(item.Name);
-                }
+                items.Add(item.Name);
             }
 
             return new RazorComponentResult<PhotoGallery>(new { Blobs = items });
@@ -25,9 +21,26 @@ public static class ImagesApi
             IFormFile file,
             BlobContainerClient container) =>
         {
+            var contentType = Path.GetExtension(file.FileName).ToLowerInvariant() switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                _ => null
+            };
+
+            if (contentType == null)
+            {
+                return Results.BadRequest("Unsupported file type.");
+            }
+
             var blob = container.GetBlobClient(file.FileName);
             using var stream = file.OpenReadStream();
             await blob.UploadAsync(stream, overwrite: true);
+            await blob.SetHttpHeadersAsync(new BlobHttpHeaders
+            {
+                ContentType = contentType
+            });
 
             // Redirect to home after upload
             return Results.Redirect("/");
@@ -46,13 +59,25 @@ public static class ImagesApi
                 return Results.NotFound();
             }
 
-            var contentType = Path.GetExtension(path).ToLowerInvariant() switch
+            async Task<string> GetContentTypeAsync()
             {
-                ".jpg" or ".jpeg" => "image/jpeg",
-                ".png" => "image/png",
-                ".gif" => "image/gif",
-                _ => "application/octet-stream"
-            };
+                var props = await blob.GetPropertiesAsync();
+
+                if (props.Value.ContentType != null)
+                {
+                    return props.Value.ContentType;
+                }
+
+                return Path.GetExtension(path).ToLowerInvariant() switch
+                {
+                    ".jpg" or ".jpeg" => "image/jpeg",
+                    ".png" => "image/png",
+                    ".gif" => "image/gif",
+                    _ => "application/octet-stream"
+                };
+            }
+
+            var contentType = await GetContentTypeAsync();
 
             return Results.Stream(await blob.OpenReadAsync(), contentType);
         });
@@ -72,7 +97,7 @@ public static class ImagesApi
         app.MapGet("/describe/{name}", async (string name, HttpClient client) =>
         {
             // Forward the request to the image processor service
-            var encodedName = Uri.EscapeDataString(name);
+            var encodedName = UrlPathEncode(name);
             return await client.GetStringAsync($"http+https://imageprocessor/describe/{encodedName}");
         });
 
