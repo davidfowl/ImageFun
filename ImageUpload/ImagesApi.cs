@@ -2,7 +2,6 @@ public static class ImagesApi
 {
     public static void MapImageApi(this WebApplication app)
     {
-        // Endpoint to render a photo gallery of image blobs
         app.MapGet("/", async (BlobContainerClient container) =>
         {
             static bool IsImage(string ext) => ext is ".jpg" or ".jpeg" or ".png" or ".gif";
@@ -22,7 +21,6 @@ public static class ImagesApi
             return new RazorComponentResult<PhotoGallery>(new { Blobs = items });
         });
 
-        // Minimal POST endpoint for image upload
         app.MapPost("/upload", async (
             IFormFile file,
             BlobContainerClient container) =>
@@ -35,7 +33,6 @@ public static class ImagesApi
             return Results.Redirect("/");
         });
 
-        // Endpoint to serve raw image bytes for thumbnails and previews
         app.MapGet("/images/{*path}", async (string path, BlobContainerClient container) =>
         {
             if (string.IsNullOrEmpty(path))
@@ -56,18 +53,12 @@ public static class ImagesApi
                 ".gif" => "image/gif",
                 _ => "application/octet-stream"
             };
+
             return Results.Stream(await blob.OpenReadAsync(), contentType);
         });
 
-        // Endpoint to render an HTML preview page for a single image
         app.MapGet("/preview/{*path}", async Task<IResult> (string path, BlobContainerClient container) =>
         {
-            var ext = Path.GetExtension(path).ToLowerInvariant();
-            if (string.IsNullOrEmpty(path) || ext is not (".jpg" or ".jpeg" or ".png" or ".gif"))
-            {
-                // Return a minimal HTML redirect since RazorComponentResult cannot be returned here
-                return Results.Content("<meta http-equiv='refresh' content='0; url=/' />", "text/html");
-            }
             var blob = container.GetBlobClient(path);
             if (!await blob.ExistsAsync())
             {
