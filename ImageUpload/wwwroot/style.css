@@ -176,22 +176,29 @@ form[action='/upload'] {
     transform: translateY(0);
 }
 
-.description-box {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    right: 20px;
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+.description-section {
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
     border: 1px solid #e2e8f0;
     border-radius: 12px;
     padding: 1.5rem;
-    z-index: 1000;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    margin: 2rem 0;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
     font-size: 1.1rem;
     line-height: 1.6;
-    backdrop-filter: blur(10px);
-    max-height: 200px;
+    color: #4a5568;
+    text-align: left;
+    max-height: 300px;
     overflow-y: auto;
+}
+
+.description-section h3 {
+    margin: 0 0 1rem 0;
+    color: #4a5568;
+    font-size: 1.2rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .back-link {

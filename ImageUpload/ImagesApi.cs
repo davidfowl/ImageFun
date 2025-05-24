@@ -7,14 +7,14 @@ public static class ImagesApi
         app.MapGet("/", async (BlobContainerClient container) =>
         {
             var blobs = container.GetBlobsAsync();
-            var items = new List<string>();
+            var images = new List<string>();
 
             await foreach (var item in blobs)
             {
-                items.Add(item.Name);
+                images.Add(item.Name);
             }
 
-            return new RazorComponentResult<PhotoGallery>(new { Blobs = items });
+            return new RazorComponentResult<PhotoGallery>(new { Images = images });
         });
         
         app.MapPost("/upload", async (
