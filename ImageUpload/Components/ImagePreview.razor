@@ -18,7 +18,7 @@
     <script>
         async function fetchDescription() {
             const descBox = document.getElementById('descbox');
-            descBox.textContent = 'Loading...';
+            descBox.innerHTML = '<span class="loading">🤖 Generating description...</span>';
             const imageName = encodeURIComponent('@Path');
             try {
                 const resp = await fetch(`/describe/${imageName}`);
@@ -26,7 +26,7 @@
                 const desc = await resp.text();
                 descBox.textContent = desc;
             } catch {
-                descBox.textContent = 'No description available.';
+                descBox.textContent = '❌ No description available.';
             }
         }
         document.addEventListener('DOMContentLoaded', function() {
@@ -35,12 +35,20 @@
         });
     </script>
 </head>
-<body>
-    <h1>Preview: @safePath</h1>
-    <img src="@imgSrc" style="display:block;margin:2em auto;max-width:600px;max-height:400px;" />
-    <button id="descgenbtn" style="display:block;margin:1em auto;">Generate Description</button>
-    <div id="descbox" style="position:fixed;bottom:20px;left:20px;right:20px;background:#fffbe8;border:1px solid #ccc;padding:1em;z-index:1000;box-shadow:0 2px 8px #0002;font-size:1.1em;"></div>
-    <br />
-    <a href="@backHref">Back</a>
+<body class="image-preview-body">
+    <div class="preview-container">
+        <div class="preview-header">
+            <h1>🖼️ @safePath</h1>
+        </div>
+        <div class="preview-content">
+            <div class="image-container">
+                <img src="@imgSrc" class="preview-image" alt="Preview of @safePath" />
+            </div>
+            <button id="descgenbtn" class="btn">✨ Generate New Description</button>
+            <br />
+            <a href="@backHref" class="back-link">← Back to Gallery</a>
+        </div>
+    </div>
+    <div id="descbox" class="description-box"></div>
 </body>
 </html>

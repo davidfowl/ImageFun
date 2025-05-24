@@ -16,7 +16,7 @@ public static class ImagesApi
 
             return new RazorComponentResult<PhotoGallery>(new { Blobs = items });
         });
-
+        
         app.MapPost("/upload", async (
             IFormFile file,
             BlobContainerClient container) =>
