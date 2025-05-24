@@ -14,8 +14,10 @@ var blobs = storage.AddBlobs("blobs");
 var container = blobs.AddBlobContainer("images", blobContainerName: "image-uploads");
 
 var acr = builder.AddAzureContainerRegistry("acr");
+
 var feenv = builder.AddAzureAppServiceEnvironment("fe-env")
     .WithAzureContainerRegistry(acr);
+
 var beenv = builder.AddAzureContainerAppEnvironment("be-env")
     .WithAzureContainerRegistry(acr);
 
