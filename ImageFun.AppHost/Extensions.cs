@@ -1,33 +1,35 @@
 using Aspire.Hosting.Azure;
 using Aspire.Hosting.Azure.AppContainers;
-using Azure.Provisioning;
 using Azure.Provisioning.Expressions;
 
 public static class Extensions
 {
+    /// <summary>
+    /// Fixes endpoint references in the Azure App Service website configuration by resolving environment-specific domains.
+    /// </summary>
+    /// <param name="projectResource">The project resource builder to configure endpoints for.</param>
+    /// <remarks>
+    /// This method handles endpoint resolution between different deployment environments:
+    /// - If the endpoint reference is within the same environment, it preserves the original configuration
+    /// - For cross-environment references (specifically Azure Container Apps), it resolves the correct domain
+    /// - Environment variables containing endpoint references are processed and updated accordingly
+    /// </remarks>
+    /// <exception cref="NotSupportedException">
+    /// Thrown when encountering an environment type other than AzureContainerAppEnvironment during endpoint resolution.
+    /// </exception>
     public static void FixEndpoints(this IResourceBuilder<ProjectResource> projectResource)
     {
         Dictionary<string, object> env = [];
 
-        projectResource.WithEnvironment(context =>
-        {
-            env = context.EnvironmentVariables;
-        });
+        projectResource.WithEnvironment(context => env = context.EnvironmentVariables);
 
         projectResource.PublishAsAzureAppServiceWebsite((infra, website) =>
         {
             foreach (var setting in website.SiteConfig.AppSettings)
             {
-                IBicepValue? v = setting?.Value?.Name;
+                string? name = setting.Value?.Name.Value;
 
-                if (v == null)
-                {
-                    continue;
-                }
-
-                var name = v.LiteralValue?.ToString();
-
-                if (name == null)
+                if (name is null)
                 {
                     continue;
                 }
