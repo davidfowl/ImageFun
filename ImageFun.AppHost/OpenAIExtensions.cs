@@ -17,12 +17,12 @@ public static class OpenAIExtensions
     public static IResourceBuilder<ConnectionStringResource> AddGithubModelConnection(
         this IDistributedApplicationBuilder builder,
         string name,
-        IResourceBuilder<ParameterResource> key,
+        IResourceBuilder<ParameterResource> githubToken,
         IResourceBuilder<ParameterResource> model)
     {
         return builder.AddConnectionString(name, cs =>
         {
-            cs.Append($"Endpoint=https://models.github.ai/inference;Key={key};Model={model}");
+            cs.Append($"Endpoint=https://models.github.ai/inference;Key={githubToken};Model={model}");
         });
     }
 
