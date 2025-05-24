@@ -1,10 +1,10 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-var oaikey = builder.AddParameter("oaikey", secret: true);
-var oaics = builder.AddConnectionString("oai", cs =>
-{
-    cs.Append($"Key={oaikey};Model=gpt-4o");
-});
+var openaikey = builder.AddParameter("oaikey", secret: true);
+var model = builder.AddParameter("model", "gpt-4.1", publishValueAsDefault: true);
+
+// Add a github model connection
+var oai = builder.AddOpenAIConnection("oai", openaikey, model);
 
 var storage = builder.AddAzureStorage("storage").RunAsEmulator();
 
@@ -24,7 +24,7 @@ var beenv = builder.AddAzureContainerAppEnvironment("be-env")
 var imageProcessor = builder.AddProject<Projects.ImageProcessor>("imageprocessor")
        .WithExternalHttpEndpoints()
        .WithReference(blobs)
-       .WithReference(oaics)
+       .WithReference(oai)
        .WaitFor(container)
        .WithComputeEnvironment(beenv);
 
