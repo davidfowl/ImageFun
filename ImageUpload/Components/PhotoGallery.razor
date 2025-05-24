@@ -8,27 +8,59 @@
 
 <link rel="stylesheet" href="/style.css" />
 
-<form action="/upload" method="post" enctype="multipart/form-data" style="margin-bottom:2em;">
-    <AntiforgeryToken />
-    <label for="file">Upload file:</label>
-    <input type="file" id="file" name="file" required />
-    <button type="submit">Upload</button>
-</form>
-
-<div class="gallery">
-    @foreach (var name in Blobs)
-    {
-        var thumbUrl = $"/images/{UrlPathEncode(name)}";
-        var previewUrl = $"/preview/{UrlPathEncode(name)}";
-        <div class="gallery-item">
-            <a href="@previewUrl" title="Preview">
-                <img src="@thumbUrl" alt="@name" />
-            </a>
-            <form method="post" action="/delete" onsubmit="return confirm('Delete @name?')">
+<html>
+<head></head>
+<body class="photo-gallery-body">
+    <div class="gallery-container">
+        <div class="gallery-header">
+            <h1>📸 Photo Gallery</h1>
+            <p>Upload and manage your beautiful images</p>
+        </div>
+        
+        <div class="upload-section">
+            <form action="/upload" method="post" enctype="multipart/form-data" class="upload-form">
                 <AntiforgeryToken />
-                <input type="hidden" name="file" value="@name" />
-                <button type="submit">Delete</button>
+                <label for="file">Choose file:</label>
+                <input type="file" id="file" name="file" class="file-input" required accept="image/*" />
+                <button type="submit" class="upload-btn">📤 Upload Image</button>
             </form>
         </div>
-    }
-</div>
+
+        <div class="gallery-content">
+            @if (Blobs.Count == 0)
+            {
+                <div class="empty-gallery">
+                    <h3>🎨 No images yet</h3>
+                    <p>Upload your first image to get started!</p>
+                </div>
+            }
+            else
+            {
+                <div class="modern-gallery">
+                    @foreach (var name in Blobs)
+                    {
+                        var thumbUrl = $"/images/{UrlPathEncode(name)}";
+                        var previewUrl = $"/preview/{UrlPathEncode(name)}";
+                        <div class="modern-gallery-item">
+                            <a href="@previewUrl" class="image-link" title="Preview @name">
+                                <img src="@thumbUrl" alt="@name" class="gallery-image" />
+                                <div class="image-overlay">
+                                    👁️ View Full Size
+                                </div>
+                            </a>
+                            <div class="gallery-item-actions">
+                                <span class="image-name" title="@name">@name</span>
+                                <form method="post" action="/delete" class="delete-form" onsubmit="return confirm('Delete @name?')">
+                                    <AntiforgeryToken />
+                                    <input type="hidden" name="file" value="@name" />
+                                    <button type="submit" class="delete-btn">🗑️ Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</body>
+</html>
