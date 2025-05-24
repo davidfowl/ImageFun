@@ -27,7 +27,7 @@ To run ImageFun, you'll need the following external services:
    - Requires a valid OpenAI API key with access to GPT-4o model
    - Configured as a secret parameter in the Aspire host (`Parameters:oaikey`)
 
-## .NET Aspire 9.3 Compute Environments Showcase
+## .NET Aspire Multi-Compute Environment Showcase
 
 This project showcases the new **Compute Environments** feature introduced in .NET Aspire 9.3, which allows you to deploy different parts of your application to different Azure compute services based on their specific requirements.
 
@@ -115,7 +115,7 @@ This application is showcasing using different compute environments for differen
 - **.NET 9.0**: Latest .NET runtime and SDK
 - **ASP.NET Core**: Web framework for both frontend and backend
 - **Razor Components**: Server-side rendering for the UI
-- **.NET Aspire 9.3**: Cloud-native orchestration and deployment
+- **.NET Aspire**: Cloud-native orchestration and deployment
 - **Azure Blob Storage**: Image storage and retrieval
 - **OpenAI GPT-4o**: AI-powered image description generation
 - **Azure App Service**: Frontend hosting
