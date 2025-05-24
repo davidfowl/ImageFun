@@ -3,7 +3,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 var openaikey = builder.AddParameter("oaikey", secret: true);
 var model = builder.AddParameter("model", "gpt-4.1", publishValueAsDefault: true);
 
-// Add a github model connection
+// Add a model connection
 var oai = builder.AddOpenAIConnection("oai", openaikey, model);
 
 var storage = builder.AddAzureStorage("storage").RunAsEmulator();
