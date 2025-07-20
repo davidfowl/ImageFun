@@ -8,10 +8,8 @@ var oai = builder.AddOpenAIConnection("oai", openaikey, model);
 
 var storage = builder.AddAzureStorage("storage").RunAsEmulator();
 
-var blobs = storage.AddBlobs("blobs");
-
 // This will make sure the container is created
-var container = blobs.AddBlobContainer("images", blobContainerName: "image-uploads");
+var container = storage.AddBlobContainer("images", blobContainerName: "image-uploads");
 
 var acr = builder.AddAzureContainerRegistry("acr");
 
@@ -23,14 +21,14 @@ var beenv = builder.AddAzureContainerAppEnvironment("be-env")
 
 var imageProcessor = builder.AddProject<Projects.ImageProcessor>("imageprocessor")
        .WithExternalHttpEndpoints()
-       .WithReference(blobs)
+       .WithReference(container)
        .WithReference(oai)
        .WaitFor(container)
        .WithComputeEnvironment(beenv);
 
 builder.AddProject<Projects.ImageUpload>("web")
     .WithExternalHttpEndpoints()
-    .WithReference(blobs)
+    .WithReference(container)
     .WaitFor(container)
     .WithReference(imageProcessor)
     .WaitFor(imageProcessor)
