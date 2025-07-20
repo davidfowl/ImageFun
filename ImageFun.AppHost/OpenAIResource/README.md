@@ -1,6 +1,6 @@
 # OpenAI Resource for .NET Aspire
 
-Provides extension methods and resource definitions for a .NET Aspire AppHost to configure OpenAI services.
+Provides extension methods and resource definitions for a .NET Aspire AppHost to configure OpenAI services as connection string resources.
 
 ## Getting started
 
@@ -9,9 +9,17 @@ Provides extension methods and resource definitions for a .NET Aspire AppHost to
 - OpenAI account with API access
 - OpenAI [API key](https://platform.openai.com/api-keys)
 
+### Install the resource
+
+Copy the `OpenAIResource.cs` file to your AppHost project and add the namespace:
+
+```csharp
+using ImageFun.AppHost.Resources;
+```
+
 ## Usage example
 
-Then, in the _AppHost.cs_ file of `AppHost`, add an OpenAI resource and consume the connection using the following methods:
+In the _AppHost.cs_ file of `AppHost`, add an OpenAI resource and consume the connection using the following methods:
 
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
@@ -26,37 +34,41 @@ builder.Build().Run();
 
 The `WithReference` method passes that connection information into a connection string named `openai` in the `MyService` project.
 
-In the _Program.cs_ file of `MyService`, the connection can be consumed using a client library like [Azure.AI.OpenAI](https://www.nuget.org/packages/Azure.AI.OpenAI):
+In the _Program.cs_ file of `MyService`, the connection can be consumed using the [Aspire.OpenAI](https://www.nuget.org/packages/Aspire.OpenAI) library:
 
 ```csharp
-var builder = WebApplication.CreateBuilder(args);
-
-// Get the connection string
-var openaiConnectionString = builder.Configuration.GetConnectionString("openai");
-
-// Parse the connection string
-var connectionParts = openaiConnectionString.Split(';')
-    .Select(part => part.Split('='))
-    .ToDictionary(parts => parts[0], parts => parts[1]);
-    
-var apiKey = connectionParts["Key"];
-var model = connectionParts["Model"];
-var endpoint = connectionParts.TryGetValue("Endpoint", out var ep) ? ep : "https://api.openai.com";
-
-// Configure your OpenAI client
-builder.Services.AddSingleton(new OpenAIClient(apiKey, new OpenAIClientOptions
-{
-    Endpoint = new Uri(endpoint)
-}));
+builder.AddOpenAIClient("openai");
 ```
+
+You can then retrieve the `OpenAIClient` instance using dependency injection. For example, to retrieve the client from a Web API controller:
+
+```csharp
+private readonly OpenAIClient _client;
+
+public ChatController(OpenAIClient client)
+{
+    _client = client;
+}
+```
+
+To learn how to use the OpenAI client library refer to [Using the OpenAIClient class](https://github.com/openai/openai-dotnet?tab=readme-ov-file#using-the-openaiclient-class).
 
 ## Configuration
 
-The OpenAI resource can be configured with the following options:
+The OpenAI resource provides multiple configuration options to meet the requirements and conventions of your project.
 
-### API Key
+### Use automatic parameter handling
 
-The API key can be set as a configuration value using the default name `{resource_name}-apikey` or the `OPENAI_API_KEY` environment variable.
+The simplest configuration uses automatic parameter handling that looks for the API key in configuration or environment variables:
+
+```csharp
+var openai = builder.AddOpenAI("openai", "gpt-4o");
+```
+
+The API key will be automatically resolved from:
+1. Configuration value at `Parameters:openai-apikey`
+2. `OPENAI_API_KEY` environment variable
+3. Throws `MissingParameterValueException` if neither is found
 
 Then in user secrets:
 
@@ -69,7 +81,9 @@ Then in user secrets:
 }
 ```
 
-Furthermore, the API key can be configured using a custom parameter:
+### Use custom parameters
+
+You can explicitly provide parameters for full control:
 
 ```csharp
 var apiKey = builder.AddParameter("my-api-key", secret: true);
@@ -88,7 +102,7 @@ Then in user secrets:
 }
 ```
 
-### Custom Endpoints
+### Use custom endpoints
 
 The resource supports custom endpoints for Azure OpenAI or other OpenAI-compatible services:
 
@@ -101,9 +115,9 @@ var azureModel = builder.AddParameter("azure-model", "gpt-4");
 var azureOpenai = builder.AddOpenAI("azure-openai", azureEndpoint, azureKey, azureModel);
 ```
 
-### Fluent Configuration
+### Use fluent configuration
 
-Use fluent methods to customize the resource:
+Use fluent methods to customize the resource after creation:
 
 ```csharp
 var openai = builder.AddOpenAI("openai", "gpt-4")
@@ -113,10 +127,12 @@ var openai = builder.AddOpenAI("openai", "gpt-4")
 
 ## Connection String Format
 
-The resource generates connection strings in the following format:
+The OpenAI resource generates connection strings in the following format:
 
 - **With endpoint**: `Endpoint=https://api.example.com;Key=sk-xxx;Model=gpt-4`
 - **Without endpoint**: `Key=sk-xxx;Model=gpt-4` (uses default OpenAI endpoint)
+
+These connection strings are compatible with the [Aspire.OpenAI](https://www.nuget.org/packages/Aspire.OpenAI) library and can be consumed directly using `builder.AddOpenAIClient("connectionName")`.
 
 ## Available Models
 
@@ -129,27 +145,10 @@ OpenAI supports various AI models. Some popular options include:
 
 Check the [OpenAI documentation](https://platform.openai.com/docs/models) for the most up-to-date list of available models.
 
-## Resource Properties
-
-The OpenAI resource provides these properties:
-
-- **Model**: The model name (e.g., "gpt-4o")
-- **Key**: The API key parameter resource
-- **Endpoint**: The endpoint parameter resource (optional)
-- **ConnectionStringExpression**: The computed connection string expression
-
-## Examples
-
-See the `Examples.cs` file for comprehensive usage examples including:
-
-- Basic OpenAI configuration
-- Azure OpenAI setup
-- Fluent configuration patterns
-- Service consumption examples
-
 ## Additional documentation
 
 * https://platform.openai.com/docs
+* https://github.com/openai/openai-dotnet
 * https://github.com/dotnet/aspire/tree/main/src/Components/README.md
 
 ## Feedback & contributing
