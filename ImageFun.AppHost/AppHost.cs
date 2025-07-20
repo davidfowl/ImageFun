@@ -1,10 +1,9 @@
+using ImageFun.AppHost.Resources;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
-var openaikey = builder.AddParameter("oaikey", secret: true);
-var model = builder.AddParameter("model", "gpt-4.1", publishValueAsDefault: true);
-
-// Add a model connection
-var oai = builder.AddOpenAIConnection("oai", openaikey, model);
+// Add a model connection using our custom OpenAI resource with automatic parameter handling
+var oai = builder.AddOpenAI("oai", "gpt-4o");
 
 var storage = builder.AddAzureStorage("storage").RunAsEmulator();
 
