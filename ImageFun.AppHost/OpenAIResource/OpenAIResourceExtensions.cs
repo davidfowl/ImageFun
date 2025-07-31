@@ -67,41 +67,6 @@ public static class OpenAIResourceExtensions
     }
 
     /// <summary>
-    /// Adds an OpenAI resource configured with the standard OpenAI service.
-    /// </summary>
-    /// <param name="builder">The distributed application builder.</param>
-    /// <param name="name">The name of the OpenAI resource.</param>
-    /// <param name="apiKey">The API key parameter.</param>
-    /// <param name="model">The model parameter.</param>
-    /// <returns>A reference to the <see cref="IResourceBuilder{T}"/>.</returns>
-    public static IResourceBuilder<OpenAIResource> AddOpenAI(this IDistributedApplicationBuilder builder, [ResourceName] string name, IResourceBuilder<ParameterResource> apiKey, IResourceBuilder<ParameterResource> model)
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
-
-        var resource = new OpenAIResource(name, ReferenceExpression.Create($"{model.Resource}"), apiKey.Resource);
-        return builder.AddResource(resource);
-    }
-
-    /// <summary>
-    /// Adds an OpenAI resource configured with a custom endpoint.
-    /// </summary>
-    /// <param name="builder">The distributed application builder.</param>
-    /// <param name="name">The name of the OpenAI resource.</param>
-    /// <param name="endpoint">The endpoint parameter.</param>
-    /// <param name="apiKey">The API key parameter.</param>
-    /// <param name="model">The model parameter.</param>
-    /// <returns>A reference to the <see cref="IResourceBuilder{T}"/>.</returns>
-    public static IResourceBuilder<OpenAIResource> AddOpenAI(this IDistributedApplicationBuilder builder, [ResourceName] string name, IResourceBuilder<ParameterResource> endpoint, IResourceBuilder<ParameterResource> apiKey, IResourceBuilder<ParameterResource> model)
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
-
-        var resource = new OpenAIResource(name, ReferenceExpression.Create($"{model.Resource}"), apiKey.Resource, ReferenceExpression.Create($"{endpoint.Resource}"));
-        return builder.AddResource(resource);
-    }
-
-    /// <summary>
     /// Configures the API key for the OpenAI resource from a parameter.
     /// </summary>
     /// <param name="builder">The resource builder.</param>
