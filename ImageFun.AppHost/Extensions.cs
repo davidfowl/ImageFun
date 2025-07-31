@@ -1,5 +1,6 @@
 using Aspire.Hosting.Azure;
 using Aspire.Hosting.Azure.AppContainers;
+using Azure.Provisioning.AppContainers;
 using Azure.Provisioning.Expressions;
 
 public static class Extensions
@@ -50,12 +51,14 @@ public static class Extensions
                     // We only support AzureContainerAppEnvironment
                     if (endpointRefEnvironment is AzureContainerAppEnvironmentResource endpointRefEnv)
                     {
-                        // Get the domain from the environment. We should expose this as a property
-                        // on the AzureContainerAppEnvironmentResource.
-                        var domainParameter = new BicepOutputReference("AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN", endpointRefEnv).AsProvisioningParameter(infra);
+                        // Get the domain from the container app environment (this is not idempotent)
+                        // See https://github.com/dotnet/aspire/issues/10560
+                        var environment = infra.GetProvisionableResources().OfType<ContainerAppManagedEnvironment>()
+                            .FirstOrDefault(env => env.BicepIdentifier == endpointRefEnv.GetBicepIdentifier())
+                            ?? (ContainerAppManagedEnvironment)endpointRefEnv.AddAsExistingResource(infra);
 
                         setting!.Value!.Value = BicepFunction.Interpolate(
-                            $"{e.Scheme}://{e.Resource.Name}.{domainParameter}"
+                            $"{e.Scheme}://{e.Resource.Name}.{environment.DefaultDomain}"
                         );
                     }
                     else

@@ -1,17 +1,12 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-var openaikey = builder.AddParameter("oaikey", secret: true);
-var model = builder.AddParameter("model", "gpt-4.1", publishValueAsDefault: true);
-
-// Add a model connection
-var oai = builder.AddOpenAIConnection("oai", openaikey, model);
+// Add a model connection using our custom OpenAI resource with automatic parameter handling
+var oai = builder.AddOpenAI("oai", "gpt-4o");
 
 var storage = builder.AddAzureStorage("storage").RunAsEmulator();
 
-var blobs = storage.AddBlobs("blobs");
-
 // This will make sure the container is created
-var container = blobs.AddBlobContainer("images", blobContainerName: "image-uploads");
+var container = storage.AddBlobContainer("images", blobContainerName: "image-uploads");
 
 var acr = builder.AddAzureContainerRegistry("acr");
 
@@ -23,14 +18,14 @@ var beenv = builder.AddAzureContainerAppEnvironment("be-env")
 
 var imageProcessor = builder.AddProject<Projects.ImageProcessor>("imageprocessor")
        .WithExternalHttpEndpoints()
-       .WithReference(blobs)
+       .WithReference(container)
        .WithReference(oai)
        .WaitFor(container)
        .WithComputeEnvironment(beenv);
 
 builder.AddProject<Projects.ImageUpload>("web")
     .WithExternalHttpEndpoints()
-    .WithReference(blobs)
+    .WithReference(container)
     .WaitFor(container)
     .WithReference(imageProcessor)
     .WaitFor(imageProcessor)
