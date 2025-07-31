@@ -40,15 +40,28 @@ In the _Program.cs_ file of `MyService`, the connection can be consumed using th
 builder.AddOpenAIClient("openai");
 ```
 
-You can then retrieve the `OpenAIClient` instance using dependency injection. For example, to retrieve the client from a Web API controller:
+You can then retrieve the `OpenAIClient` instance using dependency injection. For example, to use the client in a minimal API:
 
 ```csharp
-private readonly OpenAIClient _client;
-
-public ChatController(OpenAIClient client)
+app.MapPost("/chat", async (string message, OpenAIClient client) =>
 {
-    _client = client;
-}
+    var chatClient = client.GetChatClient("gpt-4o");
+    var response = await chatClient.CompleteChatAsync([new UserChatMessage(message)]);
+    return response.Value.Content[0].Text;
+});
+```
+
+Alternatively, you can use [Microsoft.Extensions.AI](https://www.nuget.org/packages/Microsoft.Extensions.AI) for a more abstracted approach:
+
+```csharp
+builder.AddOpenAIClient("openai")
+       .AddChatClient();
+
+app.MapPost("/chat", async (string message, IChatClient chatClient) =>
+{
+    var response = await chatClient.CompleteAsync(message);
+    return response.Message.Text;
+});
 ```
 
 To learn how to use the OpenAI client library refer to [Using the OpenAIClient class](https://github.com/openai/openai-dotnet?tab=readme-ov-file#using-the-openaiclient-class).
@@ -104,15 +117,14 @@ Then in user secrets:
 
 ### Use custom endpoints
 
-The resource supports custom endpoints for Azure OpenAI or other OpenAI-compatible services:
+The resource supports custom endpoints for OpenAI-compatible services:
 
 ```csharp
-// Azure OpenAI
-var azureEndpoint = builder.AddParameter("azure-endpoint", "https://myazure.openai.azure.com");
-var azureKey = builder.AddParameter("azure-key", secret: true);
-var azureModel = builder.AddParameter("azure-model", "gpt-4");
+var endpoint = builder.AddParameter("custom-endpoint", "https://api.custom-openai.com");
+var apiKey = builder.AddParameter("custom-key", secret: true);
+var model = builder.AddParameter("custom-model", "gpt-4");
 
-var azureOpenai = builder.AddOpenAI("azure-openai", azureEndpoint, azureKey, azureModel);
+var customOpenai = builder.AddOpenAI("custom-openai", endpoint, apiKey, model);
 ```
 
 ### Use fluent configuration
