@@ -11,10 +11,14 @@ Provides extension methods and resource definitions for a .NET Aspire AppHost to
 
 ### Install the resource
 
-Copy the `OpenAIResource.cs` file to your AppHost project and add the namespace:
+Copy the files from the `OpenAIResource` folder to your AppHost project:
+- `OpenAIResource.cs` - The resource definition
+- `OpenAIResourceExtensions.cs` - Extension methods for configuration
+
+Add the namespace:
 
 ```csharp
-using ImageFun.AppHost.Resources;
+using Aspire.Hosting;
 ```
 
 ## Usage example
@@ -122,9 +126,10 @@ The resource supports custom endpoints for OpenAI-compatible services:
 ```csharp
 var endpoint = builder.AddParameter("custom-endpoint", "https://api.custom-openai.com");
 var apiKey = builder.AddParameter("custom-key", secret: true);
-var model = builder.AddParameter("custom-model", "gpt-4");
 
-var customOpenai = builder.AddOpenAI("custom-openai", endpoint, apiKey, model);
+var customOpenai = builder.AddOpenAI("custom-openai", "gpt-4")
+    .WithApiKey(apiKey)
+    .WithEndpoint(endpoint);
 ```
 
 ### Use fluent configuration
