@@ -1,5 +1,3 @@
-using ImageFun.AppHost.Resources;
-
 var builder = DistributedApplication.CreateBuilder(args);
 
 // Add a model connection using our custom OpenAI resource with automatic parameter handling
